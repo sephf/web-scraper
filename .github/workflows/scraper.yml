@@ -2,9 +2,10 @@ name: Scraper EmpleoCR
 
 on:
   schedule:
-    - cron: '0 12 * * *'
+    - cron: '0 12 * * 1,3,5'
   workflow_dispatch:
-
+permissions:
+    contents: write
 jobs:
   scrape:
     runs-on: ubuntu-latest

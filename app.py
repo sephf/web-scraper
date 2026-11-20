@@ -69,3 +69,12 @@ else:
     ).query('_merge == "left_only"').drop(columns="_merge")
 
     nuevos.to_csv("new_jobs.csv", index=False)
+
+files_to_clean = sorted(
+    glob.glob("history/jobs*.csv"),
+    key=os.path.getmtime
+)
+
+while len(files_to_clean) > 3:
+    archivo_viejo = files_to_clean.pop(0)
+    os.remove(archivo_viejo)
