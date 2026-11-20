@@ -28,7 +28,7 @@ jobs:
 
       - name: Ejecutar scraper
         run: |
-          python scraper.py
+          python app.py
 
       - name: Guardar cambios
         run: |
