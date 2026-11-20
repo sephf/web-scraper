@@ -58,7 +58,7 @@ save_csv(datos)
 
 files = sorted(glob.glob("history/jobs*.csv"))
 
-if len(files) >= 2:
+if len(files) < 2:
         print("No hay histórico suficiente para comparar.")
 else:
     csv_actual = pd.read_csv(files[-1])
@@ -69,14 +69,17 @@ else:
         how="left",
         indicator=True
     ).query('_merge == "left_only"').drop(columns="_merge")
-
     nuevos.to_csv("new_jobs.csv", index=False)
+    print(f"Nuevos encontrados: {len(nuevos)}")
+
+if len(files) >= 2:
+    print(nuevos)
 
 files_to_clean = sorted(
     glob.glob("history/jobs*.csv"),
     key=os.path.getmtime
 )
 
-while len(files_to_clean) > 3:
+while len(files_to_clean) > 2:
     archivo_viejo = files_to_clean.pop(0)
     os.remove(archivo_viejo)
