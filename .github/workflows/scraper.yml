@@ -1,0 +1,42 @@
+name: Scraper EmpleoCR
+
+on:
+  schedule:
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: |
+          pip install -r requirements.txt
+
+      - name: Instalar Playwright
+        run: |
+          playwright install --with-deps chromium
+
+      - name: Ejecutar scraper
+        run: |
+          python scraper.py
+
+      - name: Guardar cambios
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          git add .
+
+          git diff --staged --quiet || git commit -m "Actualizacion automatica"
+
+          git push
