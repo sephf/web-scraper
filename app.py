@@ -1,4 +1,4 @@
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, TimeoutError
 import time
 import csv, json
 import os
@@ -14,25 +14,27 @@ def scrape_jobs():
         currently = 1
         while True:
             url = f"https://empleo.cr/job-list/page/{currently}/?filter-date-posted=30days&filter-salary-from=0&filter-salary-to=1000000"
-            page.goto(url)
-            if page.query_selector(".item-job") is None:
+            try:
+                page.goto(url,wait_until="domcontentloaded", timeout=10000)
+                if page.query_selector(".item-job") is None:
+                    break
+                print(f"✨ Scraping page.. {currently}")
+                page.wait_for_selector(".item-job")
+                jobs = page.evaluate("""
+                    () => {
+                        const jobs = document.querySelectorAll('.item-job');
+                        return Array.from(jobs).map(job=> ({
+                            titulo: job.querySelector('.job-title')?.textContent.trim(),
+                            categoria: job.querySelector('.category-job')?.textContent.trim(),
+                            link: job.querySelector('.job-title a')?.href
+                        }))
+                    }
+                """)
+                all_jobs.extend(jobs)
+                currently += 1
+                time.sleep(0.5)
+            except TimeoutError:
                 break
-            print(f"✨ Scraping page.. {currently}")
-            page.wait_for_selector(".item-job")
-            jobs = page.evaluate("""
-                () => {
-                    const jobs = document.querySelectorAll('.item-job');
-                    return Array.from(jobs).map(job=> ({
-                        titulo: job.querySelector('.job-title')?.textContent.trim(),
-                        categoria: job.querySelector('.category-job')?.textContent.trim(),
-                        link: job.querySelector('.job-title a')?.href
-                    }))
-                }
-            """)
-            all_jobs.extend(jobs)
-            currently += 1
-            time.sleep(0.3)
-
         browser.close()
         return all_jobs
 
